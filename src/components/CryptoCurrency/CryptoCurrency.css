@@ -1,0 +1,24 @@
+.crypto-currency {
+  text-align: center;
+  background-color: #1e1e1e;
+  color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.crypto-info {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.crypto-item {
+  margin: 10px 20px;
+  font-size: 18px;
+}
+
+.portfolio-info {
+  margin-top: 20px;
+  font-size: 20px;
+}
