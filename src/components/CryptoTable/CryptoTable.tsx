@@ -6,25 +6,18 @@ import './CryptoTable.css';
 const CryptoTable: React.FC = () => {
   const dispatch = useDispatch();
   const cryptos = useSelector((state: any) => state.cryptos.list);
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showNullValues, setShowNullValues] = useState(false);
 
   useEffect(() => {
+    // @ts-ignore
     dispatch(fetchCryptos());
   }, [dispatch]);
 
+  // Dynamic image selection based on crypto symbol
   const getImageForCrypto = (symbol: string) => {
-    switch (symbol) {
-      case 'BTC':
-        return 'crypto-dashboard/src/assets/ico/btc@2x.png';
-      case 'ETH':
-        return '/images/cryptos/ethereum.png';
-      case 'USDT':
-        return '/images/cryptos/tether.png';
-      default:
-        return '/images/cryptos/default.png';
-    }
+    return `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`;
   };
 
   const filteredCryptos = cryptos.filter((crypto: any) => {
@@ -66,7 +59,7 @@ const CryptoTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredCryptos.map((crypto: any, index: number) => (
+          {filteredCryptos.slice(0, 100).map((crypto: any, index: number) => (
             <tr key={crypto.id}>
               <td>{index + 1}</td>
               <td>
@@ -74,6 +67,7 @@ const CryptoTable: React.FC = () => {
                   src={getImageForCrypto(crypto.symbol)}
                   alt={crypto.name}
                   className="crypto-image"
+                  width="50px"
                 />
               </td>
               <td>{crypto.name}</td>
