@@ -26,8 +26,28 @@ const CryptoTable: React.FC = () => {
     return matchesSearch && showNulls;
   });
 
+  // Calculate and display the prices of top cryptocurrencies (Bitcoin, Ethereum, Tether)
+  const bitcoin = cryptos.find((crypto: any) => crypto.symbol === 'BTC');
+  const ethereum = cryptos.find((crypto: any) => crypto.symbol === 'ETH');
+  const tether = cryptos.find((crypto: any) => crypto.symbol === 'USDT');
+
   return (
     <div>
+      {/* Header */}
+      <div className="crypto-header">
+        <h2>Crypto Currency</h2>
+        <div className="crypto-header-info">
+          <span><strong>Bitcoin:</strong> {bitcoin ? `${parseFloat(bitcoin.priceUsd).toFixed(2)} USD` : 'Loading...'}</span>
+          <span><strong>Ethereum:</strong> {ethereum ? `${parseFloat(ethereum.priceUsd).toFixed(2)} USD` : 'Loading...'}</span>
+          <span><strong>Tether:</strong> {tether ? `${parseFloat(tether.priceUsd).toFixed(2)} USD` : 'Loading...'}</span>
+        </div>
+        <div className="portfolio-info">
+          <p><strong>Portfolio cost:</strong> <span>0.00 $</span></p>
+          <p><strong>Portfolio change:</strong> <span>+0.00 (0.00%)</span></p>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
       <div className="search-filter">
         <input
           type="text"
@@ -44,7 +64,8 @@ const CryptoTable: React.FC = () => {
           Show null values
         </label>
       </div>
-      
+
+      {/* Crypto Table */}
       <table className="crypto-table">
         <thead>
           <tr>

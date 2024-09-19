@@ -154,3 +154,30 @@ button:hover {
   background-color: #007a08;
   color: white;
 }
+/* Header Styling */
+.crypto-header {
+  text-align: center;
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.crypto-header-info {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.crypto-header-info span {
+  margin: 0 20px;
+  font-size: 18px;
+}
+
+.portfolio-info {
+  font-size: 16px;
+}
+
+/* Table, button, and other styles remain unchanged */
