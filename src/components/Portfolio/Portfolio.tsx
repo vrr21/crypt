@@ -1,27 +1,29 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { removeFromPortfolio } from '../../slices/portfolioSlice';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import PortfolioModal from './PortfolioModal';
 import './Portfolio.css';
 
 const Portfolio: React.FC = () => {
-  const portfolio = useSelector((state: any) => state.portfolio);
-  const dispatch = useDispatch();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const portfolioCost = useSelector((state: any) => state.portfolio.cost);
+  const portfolioChange = useSelector((state: any) => state.portfolio.change);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
-    <div className="portfolio">
-      <h2>Your Portfolio</h2>
-      {portfolio.length === 0 ? (
-        <p>No cryptocurrencies added to portfolio</p>
-      ) : (
-        portfolio.map((crypto: any) => (
-          <div key={crypto.id} className="portfolio-item">
-            <h3>{crypto.name} ({crypto.symbol})</h3>
-            <button onClick={() => dispatch(removeFromPortfolio(crypto.id))}>
-              Remove
-            </button>
-          </div>
-        ))
-      )}
+    <div>
+      <div className="portfolio-summary" onClick={handleOpenModal}>
+        <p>Portfolio cost: {portfolioCost} $</p>
+        <p>Portfolio change: {portfolioChange} $</p>
+      </div>
+
+      {isModalOpen && <PortfolioModal onClose={handleCloseModal} />}
     </div>
   );
 };
