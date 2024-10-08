@@ -100,6 +100,24 @@ const CryptoTable: React.FC = () => {
     setCryptoAmount(1); // Сбросить количество после добавления в портфель
   };
 
+  // Обработчик удаления криптовалюты из портфеля
+  const removeFromPortfolio = (cryptoId: string) => {
+    const updatedPortfolio = portfolio.filter(item => item.crypto.id !== cryptoId);
+    setPortfolio(updatedPortfolio);
+    updatePortfolioStats(updatedPortfolio);
+  };
+
+  // Обработчик изменения количества криптовалюты прямо в модальном окне
+  const updateCryptoAmount = (cryptoId: string, newAmount: number) => {
+    if (newAmount >= 1) {
+      const updatedPortfolio = portfolio.map(item =>
+        item.crypto.id === cryptoId ? { ...item, amount: newAmount } : item
+      );
+      setPortfolio(updatedPortfolio);
+      updatePortfolioStats(updatedPortfolio);
+    }
+  };
+
   return (
     <div>
       {/* Заголовок таблицы криптовалют */}
@@ -187,12 +205,12 @@ const CryptoTable: React.FC = () => {
         </tbody>
       </table>
 
-      {/* Модальное окно для добавления в портфель */}
+      {/* Модальное окно для добавления и редактирования в портфеле */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
-            <button className="close-btn" onClick={() => setShowModal(false)}>Close</button>
-            {selectedCrypto && (
+            <button className="close-btn" onClick={() => setShowModal(false)}>х</button>
+            {portfolio.length > 0 ? (
               <table>
                 <thead>
                   <tr>
@@ -201,25 +219,33 @@ const CryptoTable: React.FC = () => {
                     <th>Symbol</th>
                     <th>Price</th>
                     <th>Amount</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>{selectedCrypto.name}</td>
-                    <td>{selectedCrypto.symbol}</td>
-                    <td>{parseFloat(selectedCrypto.priceUsd).toFixed(2)}</td>
-                    <td>
-                      <input
-                        type="number"
-                        min="1"
-                        value={cryptoAmount}
-                        onChange={(e) => handleAmountChange(parseInt(e.target.value))}
-                      />
-                    </td>
-                  </tr>
+                  {portfolio.map((item, index) => (
+                    <tr key={item.crypto.id}>
+                      <td>{index + 1}</td>
+                      <td>{item.crypto.name}</td>
+                      <td>{item.crypto.symbol}</td>
+                      <td>${parseFloat(item.crypto.priceUsd).toFixed(2)}</td>
+                      <td>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.amount}
+                          onChange={(e) => updateCryptoAmount(item.crypto.id, parseInt(e.target.value))}
+                        />
+                      </td>
+                      <td>
+                        <button onClick={() => removeFromPortfolio(item.crypto.id)}>Remove</button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
+            ) : (
+              <p>No cryptos in portfolio.</p>
             )}
             <button onClick={confirmAddToPortfolio}>Confirm</button>
           </div>
