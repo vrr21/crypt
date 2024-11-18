@@ -2,77 +2,54 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchCryptos } from '../../slices/cryptoSlice';
-import { addOrUpdateItem } from '../../slices/portfolioSlice';
+import { addOrUpdateItem, setPortfolio } from '../../slices/portfolioSlice'; // Экшены Redux
 import './CryptoTable.css';
 import PortfolioModal from '../Portfolio/PortfolioModal';
 import Pagination from '../Pagination/Pagination';
-//handleCryptoClick
+
 const CryptoTable: React.FC = () => {
   const dispatch = useDispatch();
   const cryptos = useSelector((state: any) => state.cryptos.list);
   const portfolio = useSelector((state: any) => state.portfolio.items);
   const navigate = useNavigate();
 
-  const [searchTerm, setSearchTerm] = useState(''); // Состояние для строки поиска
-  const [showNullValues, setShowNullValues] = useState(false); // Фильтр для показа нулевых значений
-  const [selectedCrypto, setSelectedCrypto] = useState<any | null>(null); // Состояние для выбранной криптовалюты
-  const [showModal, setShowModal] = useState(false); // Состояние для модального окна добавления в портфель
-  const [cryptoAmount, setCryptoAmount] = useState(1); // Состояние для количества криптовалют
-  const [portfolioCost, setPortfolioCost] = useState(0); // Общая стоимость портфеля
-  const [portfolioChange, setPortfolioChange] = useState(0); // Изменение портфеля
-  const [showPortfolioModal, setShowPortfolioModal] = useState(false); // Состояние для модального окна с портфелем
-  const [currentPage, setCurrentPage] = useState(1); // Состояние текущей страницы
-  const itemsPerPage = 100; // Количество криптовалют на одной странице
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showNullValues, setShowNullValues] = useState(false);
+  const [selectedCrypto, setSelectedCrypto] = useState<any | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [cryptoAmount, setCryptoAmount] = useState(1);
+  const [portfolioCost, setPortfolioCost] = useState(0);
+  const [portfolioChange, setPortfolioChange] = useState(0);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 100;
 
-  // Загружаем список криптовалют при монтировании компонента
   useEffect(() => {
     //@ts-ignore
     dispatch(fetchCryptos());
   }, [dispatch]);
 
-  // Функция для получения изображения криптовалюты по её символу
-  const getImageForCrypto = (symbol: string) => {
-    return `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`;
-  };
-
-  // Фильтруем список криптовалют в зависимости от строки поиска и фильтрации нулевых значений
-  const filteredCryptos = cryptos.filter((crypto: any) => {
-    const matchesSearch = crypto.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const showNulls = showNullValues || (!showNullValues && crypto.priceUsd !== null);
-    return matchesSearch && showNulls;
-  });
-
-  // Получаем топовые криптовалюты для отображения на главной (Bitcoin, Ethereum, Tether)
-  const bitcoin = cryptos.find((crypto: any) => crypto.symbol === 'BTC');
-  const ethereum = cryptos.find((crypto: any) => crypto.symbol === 'ETH');
-  const tether = cryptos.find((crypto: any) => crypto.symbol === 'USDT');
-
-  // Обработчик клика на название криптовалюты для перехода на её страницу
-  const handleCryptoClick = (cryptoId: string) => {
-    navigate(`/crypto/${cryptoId}`);
-  };
-
-  // Обработчик для добавления криптовалюты в портфель
-  const handleAddToPortfolio = (crypto: any) => {
-    setSelectedCrypto(crypto);
-    setShowModal(true);
-  };
-
-  // Обработчик изменения количества выбранной криптовалюты
-  const handleAmountChange = (amount: number) => {
-    if (amount >= 1) {
-      setCryptoAmount(amount);
+  // Загружаем портфель из localStorage при загрузке компонента
+  useEffect(() => {
+    const savedPortfolio = localStorage.getItem('portfolio');
+    if (savedPortfolio) {
+      dispatch(setPortfolio(JSON.parse(savedPortfolio)));
     }
-  };
+  }, [dispatch]);
 
-  // Функция для вычисления общей стоимости и изменения портфеля
+  // Сохраняем портфель в localStorage при каждом изменении портфеля
+  useEffect(() => {
+    localStorage.setItem('portfolio', JSON.stringify(portfolio));
+    updatePortfolioStats();
+  }, [portfolio]);
+
   const updatePortfolioStats = () => {
     let totalCost = 0;
     let totalChange = 0;
 
     portfolio.forEach((item: any) => {
       const cost = item.amount * item.price;
-      const change = cost * (item.changePercent24Hr / 100);
+      const change = cost * (item.changePercent24Hr || 0) / 100;
       totalCost += cost;
       totalChange += change;
     });
@@ -81,11 +58,35 @@ const CryptoTable: React.FC = () => {
     setPortfolioChange(totalChange);
   };
 
-  useEffect(() => {
-    updatePortfolioStats();
-  }, [portfolio]);
+  const getImageForCrypto = (symbol: string) => {
+    return `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`;
+  };
 
-  // Подтверждение добавления криптовалюты в портфель
+  const filteredCryptos = cryptos.filter((crypto: any) => {
+    const matchesSearch = crypto.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const showNulls = showNullValues || (!showNullValues && crypto.priceUsd !== null);
+    return matchesSearch && showNulls;
+  });
+
+  const bitcoin = cryptos.find((crypto: any) => crypto.symbol === 'BTC');
+  const ethereum = cryptos.find((crypto: any) => crypto.symbol === 'ETH');
+  const tether = cryptos.find((crypto: any) => crypto.symbol === 'USDT');
+
+  const handleCryptoClick = (cryptoId: string) => {
+    navigate(`/crypto/${cryptoId}`);
+  };
+
+  const handleAddToPortfolio = (crypto: any) => {
+    setSelectedCrypto(crypto);
+    setShowModal(true);
+  };
+
+  const handleAmountChange = (amount: number) => {
+    if (amount >= 1) {
+      setCryptoAmount(amount);
+    }
+  };
+
   const confirmAddToPortfolio = () => {
     dispatch(
       addOrUpdateItem({
@@ -94,6 +95,7 @@ const CryptoTable: React.FC = () => {
         symbol: selectedCrypto.symbol,
         price: parseFloat(selectedCrypto.priceUsd),
         amount: cryptoAmount,
+        changePercent24Hr: parseFloat(selectedCrypto.changePercent24Hr),
       })
     );
 
@@ -102,20 +104,16 @@ const CryptoTable: React.FC = () => {
     setCryptoAmount(1);
   };
 
-  // Обработчик открытия модального окна портфеля
   const handleOpenPortfolioModal = () => {
     setShowPortfolioModal(true);
   };
 
-  // Обработчик закрытия модального окна портфеля
   const handleClosePortfolioModal = () => {
     setShowPortfolioModal(false);
   };
 
-  // Пагинация - вычисляем количество страниц
   const totalPages = Math.ceil(filteredCryptos.length / itemsPerPage);
 
-  // Получаем криптовалюты для текущей страницы
   const currentCryptos = filteredCryptos.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -127,7 +125,6 @@ const CryptoTable: React.FC = () => {
 
   return (
     <div>
-      {/* Заголовок таблицы криптовалют */}
       <div className="crypto-header">
         <h2>Crypto Currency</h2>
         <div className="crypto-header-info">
@@ -141,7 +138,6 @@ const CryptoTable: React.FC = () => {
             <strong>Tether:</strong> {tether ? `${parseFloat(tether.priceUsd).toFixed(2)} USD` : 'Loading...'}
           </span>
         </div>
-        {/* Обработчик клика на блок с портфелем для открытия модального окна */}
         <div className="portfolio-info" onClick={handleOpenPortfolioModal} style={{ cursor: 'pointer' }}>
           <p>
             <strong>Portfolio cost:</strong> <span>{portfolioCost.toFixed(2)} $</span>
@@ -152,25 +148,23 @@ const CryptoTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Поисковая строка и фильтры */}
       <div className="search-filter">
         <input
           type="text"
           placeholder="Search by name"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)} // Обновление строки поиска
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
         <label>
           <input
             type="checkbox"
             checked={showNullValues}
-            onChange={(e) => setShowNullValues(e.target.checked)} // Обновление фильтра
+            onChange={(e) => setShowNullValues(e.target.checked)}
           />
           Show null values
         </label>
       </div>
 
-      {/* Таблица криптовалют */}
       <table className="crypto-table">
         <thead>
           <tr>
@@ -185,14 +179,13 @@ const CryptoTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {/* Перебираем и отображаем криптовалюты */}
           {currentCryptos.map((crypto: any, index: number) => (
             <tr key={crypto.id}>
               <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>
               <td>
                 <img src={getImageForCrypto(crypto.symbol)} alt={crypto.name} className="crypto-image" />
               </td>
-              <td onClick={() => handleCryptoClick(crypto.id)} style={{ cursor: 'pointer', color: '#fff'  }}>
+              <td onClick={() => handleCryptoClick(crypto.id)} style={{ cursor: 'pointer', color: '#fff' }}>
                 {crypto.name}
               </td>
               <td>{crypto.symbol}</td>
@@ -211,7 +204,6 @@ const CryptoTable: React.FC = () => {
 
       <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
 
-      {/* Модальное окно для добавления и редактирования в портфеле */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
@@ -231,7 +223,6 @@ const CryptoTable: React.FC = () => {
         </div>
       )}
 
-      {/* Модальное окно с портфелем */}
       {showPortfolioModal && <PortfolioModal onClose={handleClosePortfolioModal} />}
     </div>
   );
