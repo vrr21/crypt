@@ -1,25 +1,29 @@
 import React from 'react';
-import './Modal.css';
+import { useDispatch } from 'react-redux';
+import { addOrUpdateItem } from '../../slices/portfolioSlice';
 
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  cryptoName: string;
-}
+const Modal: React.FC<any> = ({ isOpen, onClose, crypto }) => {
+  const dispatch = useDispatch();
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onConfirm, cryptoName }) => {
+  const handleConfirm = () => {
+    dispatch(addOrUpdateItem({
+      id: crypto.id,
+      name: crypto.name,
+      symbol: crypto.symbol,
+      price: parseFloat(crypto.priceUsd),
+      amount: 1,
+    }));
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h3>Confirm Action</h3>
-        <p>Do you want to add {cryptoName} to your portfolio?</p>
-        <div className="modal-buttons">
-          <button onClick={onConfirm}>Yes</button>
-          <button onClick={onClose}>No</button>
-        </div>
+        <button className="close-btn" onClick={onClose}>x</button>
+        <h3>Add {crypto.name} to Portfolio</h3>
+        <button onClick={handleConfirm}>Confirm</button>
       </div>
     </div>
   );

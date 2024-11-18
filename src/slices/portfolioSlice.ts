@@ -1,53 +1,50 @@
-import { createSlice } from '@reduxjs/toolkit';
+// src/slices/portfolioSlice.ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
-  items: [
-    {
-      id: '1',
-      name: 'Solana',
-      symbol: 'SOL',
-      logo: '/assets/images/solana.png',
-      buyPrice: 147.96,
-      amount: 1,
-    },
-    {
-      id: '2',
-      name: 'Ethereum',
-      symbol: 'ETH',
-      logo: '/assets/images/ethereum.png',
-      buyPrice: 2580,
-      amount: 3,
-    },
-  ],
-  cost: 8089.88,
-  change: 214.43,
+interface PortfolioItem {
+  id: string;
+  name: string;
+  symbol: string;
+  price: number;
+  amount: number;
+}
+
+interface PortfolioState {
+  items: PortfolioItem[];
+}
+
+const initialState: PortfolioState = {
+  items: [],
 };
 
 const portfolioSlice = createSlice({
   name: 'portfolio',
   initialState,
   reducers: {
-    removeFromPortfolio: (state, action) => {
-      state.items = state.items.filter((item) => item.id !== action.payload);
-    },
-    updatePortfolioAmount: (state, action) => {
-      const { cryptoId, newAmount } = action.payload;
-      const item = state.items.find((crypto) => crypto.id === cryptoId);
-      if (item && newAmount > 0) {
-        item.amount = newAmount;
-      }
-    },
-    // Добавьте экшен для добавления криптовалюты в портфель
-    addToPortfolio: (state, action) => {
-      const existingCrypto = state.items.find((item) => item.id === action.payload.id);
-      if (existingCrypto) {
-        existingCrypto.amount += action.payload.amount;
+    addOrUpdateItem(state, action: PayloadAction<PortfolioItem>) {
+      const item = state.items.find((i) => i.id === action.payload.id);
+      if (item) {
+        item.amount += action.payload.amount;
       } else {
         state.items.push(action.payload);
+      }
+    },
+    removeItem(state, action: PayloadAction<string>) {
+      state.items = state.items.filter((item) => item.id !== action.payload);
+    },
+    updateItemAmount(
+      state,
+      action: PayloadAction<{ id: string; amount: number }>
+    ) {
+      const item = state.items.find((i) => i.id === action.payload.id);
+      if (item && action.payload.amount > 0) {
+        item.amount = action.payload.amount;
       }
     },
   },
 });
 
-export const { removeFromPortfolio, updatePortfolioAmount, addToPortfolio } = portfolioSlice.actions;
+export const { addOrUpdateItem, removeItem, updateItemAmount } =
+  portfolioSlice.actions;
+
 export default portfolioSlice.reducer;

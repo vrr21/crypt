@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import instance from '../api/instance';
 import { Crypto } from '../types/CryptoTypes';

@@ -1,4 +1,4 @@
-/* Таблица */
+/* Таблица crypto-name*/
 .crypto-table {
   width: 100%; /* Таблица всегда занимает всю ширину страницы */
   border-collapse: collapse;
@@ -233,4 +233,9 @@ button {
 
 button:hover {
   background-color: #015800;
+}
+
+.crypto-name {
+  color: white;
+  cursor: pointer; /* Сохраняем курсор в виде указателя */
 }
